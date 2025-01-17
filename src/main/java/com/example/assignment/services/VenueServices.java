@@ -3,6 +3,7 @@ package com.example.assignment.services;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -22,27 +23,22 @@ public class VenueServices {
    UserRepository userRepository;
 
    
-   public String addVenue(Venue venue,Authentication authentication){
+   public ResponseEntity<String> addVenue(Venue venue,Authentication authentication){
 
-      Optional<Users> user = userRepository.findByEmail(authentication.getName());
-      Users userObj = user.get();
+      Users user = userRepository.findByEmail(authentication.getName()).get();
 
-      Venue v = new Venue();
-      v.setName(venue.getName());
-      v.setCapacity(venue.getCapacity());
-      v.setLocation(venue.getLocation());
-      v.setUser(userObj);
+      venue.setUser(user);
 
-      venueRepository.save(v);
+      venueRepository.save(venue);
 
-      return "venue created successfully";
+      return ResponseEntity.ok("venue created successfully");
    }
 
-   public Optional<Venue> getVenue(int id){
-      return venueRepository.findById(id);
+   public Venue getVenue(int id){
+      return venueRepository.findById(id).get();
    }
 
-   public String updateVenue(int id,Venue V){
+   public ResponseEntity<String> updateVenue(int id,Venue V){
       Optional<Venue> venue = Optional.ofNullable(venueRepository.findById(id)
                               .orElseThrow(() -> new UsernameNotFoundException("Venue not found: " + id)));
       Venue v = venue.get();
@@ -51,11 +47,11 @@ public class VenueServices {
       v.setLocation(V.getLocation());
       venueRepository.save(v);
 
-      return "update successfully";
+      return ResponseEntity.ok("Update Venue successfully");
    }
 
-   public String deleteVenue(int id){
+   public ResponseEntity<String> deleteVenue(int id){
       venueRepository.deleteById(id);
-      return "Venue Deleted Successfully";
+      return ResponseEntity.ok("Venue Deleted Successfully");
    }
 }

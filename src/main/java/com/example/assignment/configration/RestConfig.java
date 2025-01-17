@@ -1,6 +1,5 @@
 package com.example.assignment.configration;
 
-
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
@@ -36,25 +35,30 @@ import org.springframework.security.web.SecurityFilterChain;
 public class RestConfig {
 
    @Value("${jwt.public.key}")
-   RSAPublicKey key;
+   private RSAPublicKey key;
 
    @Value("${jwt.private.key}")
-   RSAPrivateKey priv;
+   private RSAPrivateKey priv;
 
    @Bean
    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
       // @formatter:off
       http
+            .csrf((csrf) -> csrf.disable())
             .authorizeHttpRequests((authorize) -> authorize
                .requestMatchers("/admin/**").hasAuthority("ADMIN")
                .requestMatchers("/venue/**").hasAuthority("Venue")
                .requestMatchers("/organizer/**").hasAuthority("Organizer")
                .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-               .requestMatchers("/signin").permitAll()
+               .requestMatchers("/signup").permitAll()
+               .requestMatchers(
+                    "/v3/api-docs/**",   // OpenAPI documentation
+                    "/swagger-ui/**",    // Swagger UI static resources
+                    "/swagger-ui.html"   // Swagger UI HTML page
+                ).permitAll()
                .anyRequest().authenticated()
             )
             .csrf((csrf) -> csrf.ignoringRequestMatchers("/token"))
-            .csrf((csrf) -> csrf.disable())
             .httpBasic(Customizer.withDefaults())
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
@@ -68,7 +72,6 @@ public class RestConfig {
       // @formatter:on
       return http.build();
    }
-
 
    @Bean
    JwtDecoder jwtDecoder() {
@@ -86,7 +89,6 @@ public class RestConfig {
    public PasswordEncoder passwordEncoder() {
       return new BCryptPasswordEncoder();
    }
-
 
    private JwtAuthenticationConverter jwtAuthenticationConverter() {
       JwtAuthenticationConverter converter = new JwtAuthenticationConverter();

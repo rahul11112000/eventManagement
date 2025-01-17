@@ -9,12 +9,11 @@ import org.springframework.stereotype.Service;
 import com.example.assignment.model.Users;
 import com.example.assignment.repository.UserRepository;
 
-
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -25,7 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         // Map to Spring Security's UserDetails
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
-                .password(user.getPassword()) 
+                .password(user.getPassword())
                 .authorities(user.getRole())
                 .build();
     }

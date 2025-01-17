@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -20,13 +21,13 @@ import com.example.assignment.services.UserServices;
 public class TokenController {
 
    @Autowired
-   JwtEncoder encoder;
+   private JwtEncoder encoder;
 
    @Autowired
-   UserServices userServices;
+   private UserServices userServices;
 
-   @PostMapping("/signin")
-   public String signIn(@RequestBody Users user) {
+   @PostMapping("/signup")
+   public ResponseEntity<String> signIn(@RequestBody Users user) {
       return userServices.createUser(user);
    }
 

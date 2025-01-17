@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.assignment.model.Event;
@@ -15,85 +16,69 @@ import com.example.assignment.repository.EventRepository;
 public class EventServices {
 
    @Autowired
-   EventRepository eventRepository;
+   private EventRepository eventRepository;
 
    @Autowired
-   VenueServices venueServices;
+   private VenueServices venueServices;
 
    @Autowired
-   OrganizerServices organizerServices;
+   private OrganizerServices organizerServices;
 
-   public String createEvents(Event event){
+   public Event createEvents(Event event) {
 
-      Event e = new Event();
-      e.setEventName(event.getEventName());
-      e.setDescription(event.getDescription());
-      e.setEventDate(event.getEventDate());
+      eventRepository.save(event);
 
-      eventRepository.save(e);
-
-      return "Event Created Successfully";
+      return event;
    }
 
-   public List<Event> getAll(){
+   public List<Event> getAll() {
       return eventRepository.findAll();
    }
 
-   public Optional<Event> getEvent(int id){
-      return eventRepository.findById(id);
+   public Event getEvent(int id) {
+      return eventRepository.findById(id).get();
    }
 
-   public String updateEvents(Event event){
-      return "Event Updated successfully";
-   }
-
-   public String deleteEvents(int id){
+   public ResponseEntity<String> deleteEvents(int id) {
       eventRepository.deleteById(id);
-      return "Event Deleted Successfully";
+      return ResponseEntity.ok("Event Deleted Successfully");
    }
 
-   public Optional<Event> getVenue(int venueId){
+   public Event getVenue(int venueId) {
+      Venue venue = venueServices.getVenue(venueId);
 
-      Optional<Venue> venue = venueServices.getVenue(venueId);
-      Venue venueObj = venue.get();
-      return eventRepository.findByVenue(venueObj);
+      return eventRepository.findByVenue(venue).get();
    }
 
-   public List<Event> getOrgenizer(int organizer_id){
+   public List<Event> getOrgenizer(int organizer_id) {
 
-      Optional<Organizer> org = organizerServices.getOrganizer(organizer_id);
-      Organizer orgObj = org.get();
-      return eventRepository.findByOrganizer(orgObj);
+      Organizer org = organizerServices.getOrganizer(organizer_id);
+      return eventRepository.findByOrganizer(org);
    }
 
-   public String assingVenue(int id, int venueId){
-      
+   public ResponseEntity<String> assingVenue(int id, int venueId) {
 
-      Optional<Venue> venue = venueServices.getVenue(venueId);
-      Venue venueObj = venue.get();
-      Optional<Event> event = eventRepository.findByVenue(venueObj);
+      Venue venue = venueServices.getVenue(venueId);
+      Optional<Event> event = eventRepository.findByVenue(venue);
       if (event.isPresent()) {
-         return " Venue is already assign to other event";
+         throw new IllegalStateException("Venue is already assigned to another event");
       } else {
-         Optional<Event>  s = eventRepository.findById(id);
-         Event e = s.get();
-         e.setVenue(venueObj);
-         eventRepository.save(e);
-         return "assign venue successfully";
+         Event s = eventRepository.findById(id).get();
+         s.setVenue(venue);
+         eventRepository.save(s);
+         return ResponseEntity.ok("Venue assigned successfully");
       }
-      
+
    }
 
-   public String assignOrganizer(int id,int orgId){
-      Optional<Event>  s = eventRepository.findById(id);
-      Event e = s.get();
-      Optional<Organizer> org = organizerServices.getOrganizer(orgId);
-      Organizer orgObj = org.get();
+   public ResponseEntity<String> assignOrganizer(int id, int orgId) {
+      Event s = eventRepository.findById(id).get();
+      Organizer org = organizerServices.getOrganizer(orgId);
 
-      e.setOrganizer(orgObj);
-      eventRepository.save(e);
+      s.setOrganizer(org);
+      eventRepository.save(s);
 
-      return "Organizer assign successfully";
+      return ResponseEntity.ok("Organizer assign successfully");
    }
 
 }
